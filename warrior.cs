@@ -8,58 +8,29 @@ namespace codeWars
 {
     public class Warrior
     {
-        // Business Rules    
         private int level = 1;
         private int experience = 100;
         private string rank = "Pushover";
-        private readonly List<string> ranks = new List<string> { "Pushover", "Novice", "Fighter", "Warrior", "Veteran", "Sage", "Elite", "Conqueror", "Champion", "Master", "Greatest" };
-        private readonly List<string> achievements = new List<string>();
+        private List<string> achievements = new List<string>();
 
-        // Methods
-        public int Level()
+        public int Level
         {
-            return this.level;
+            get { return level; }
         }
 
-        public int Experience()
+        public int Experience
         {
-            return this.experience;
+            get { return experience; }
         }
 
-        public string Rank()
+        public string Rank
         {
-            return this.rank;
+            get { return rank; }
         }
 
-        public List<string> Achievements()
+        public List<string> Achievements
         {
-            return this.achievements;
-        }
-
-        public string Training(string[] trainingData)
-        {
-            string training = trainingData[0];
-            int exper = int.Parse(trainingData[1].ToString());
-            int lvl = int.Parse(trainingData[2].ToString());
-            this.experience += exper;
-            while (this.experience >= 100 && this.level < 100)
-            {
-                this.experience -= 100;
-                this.level++;
-                if (this.level % 10 == 0)
-                {
-                    this.rank = ranks[this.level / 10 - 1];
-                }
-            }
-
-            if (this.level == 100)
-            {
-                this.experience = 10000;
-                this.rank = "Greatest";
-            }
-
-            this.achievements.Add(training);
-            return training;
+            get { return achievements; }
         }
 
         public string Battle(int enemyLevel)
@@ -69,64 +40,60 @@ namespace codeWars
                 return "Invalid level";
             }
 
-            int diff = enemyLevel - level;
-            int expEarned = 0;
+            int levelDifference = enemyLevel - level;
 
-            if (diff == 0)
+            if (levelDifference >= 2)
             {
-                expEarned = 10;
+                return "No pain no gain";
             }
-            else if (diff == -1)
+            else if (levelDifference == 1 || levelDifference == 0)
             {
-                expEarned = 5;
+                int experienceGain = 10 * levelDifference + 10;
+                experience = Math.Min(10000, experience + experienceGain);
+                UpdateLevelAndRank();
+                return "A good fight";
             }
-            else if (diff >= -2)
-            {
-                expEarned = 0;
-            }
-
-            experience += expEarned;
-
-            if (level < 100)
-            {
-                while (experience >= 100)
-                {
-                    level++;
-                    experience -= 100;
-
-                    if (level % 10 == 0 && Array.IndexOf(ranks.ToArray(), rank) + 1 < ranks.Count)
-                    {
-                        rank = ranks[Array.IndexOf(ranks.ToArray(), rank) + 1];
-                    }
-                }
-            }
-            else
-            {
-                experience = 10000;
-            }
-
-            if (level == 100)
-            {
-                rank = "Greatest";
-            }
-
-            if (expEarned > 0)
-            {
-                this.achievements.Add("Defeated Chuck Norris");
-            }
-
-            if (expEarned == 10)
+            else if (levelDifference <= -2)
             {
                 return "Easy fight";
             }
-
-            if (expEarned == 5)
+            else if (levelDifference == -1)
             {
+                experience = Math.Min(10000, experience + 5);
+                UpdateLevelAndRank();
                 return "A good fight";
             }
+            else
+            {
+                return "Invalid level";
+            }
+        }
 
-            return "An intense fight";
+        public void Training(object[] trainingDetails)
+        {
+            string achievement = (string)trainingDetails[0];
+            int experienceGain = (int)trainingDetails[1];
+            experience = Math.Min(10000, experience + experienceGain);
+            UpdateLevelAndRank();
+            achievements.Add(achievement);
+        }
+
+        private void UpdateLevelAndRank()
+        {
+            int maxLevel = 100;
+
+            if (level < maxLevel && experience >= level * 100)
+            {
+                level++;
+                experience = level * 100;
+            }
+
+            int levelThreshold = 10;
+            string[] ranks = new string[] { "Pushover", "Novice", "Fighter", "Warrior", "Veteran", "Sage", "Elite", "Conqueror", "Champion", "Master", "Greatest" };
+
+            rank = ranks[(level - 1) / levelThreshold];
         }
     }
+
 
 }
